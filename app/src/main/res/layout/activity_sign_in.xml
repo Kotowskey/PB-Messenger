@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mainSignIn"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SignInActivity"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="30dp">
+
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:id="@+id/imageViewSignIn"
+        android:src="@drawable/logo"
+        android:layout_marginBottom="20dp" />
+
+    <EditText
+        android:id="@+id/txtEmailOrUsername"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Email lub Nazwa użytkownika"
+        android:inputType="textEmailAddress|textPersonName"
+        android:padding="10dp"
+        android:textColor="@color/primary_light"
+        android:layout_marginBottom="15dp" />
+
+    <EditText
+        android:id="@+id/txtPasswordSignIn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Hasło"
+        android:inputType="textPassword"
+        android:padding="10dp"
+        android:textColor="@color/primary_light"
+        android:layout_marginBottom="20dp" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/btnSignIn"
+        android:text="Sign In"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/primary"
+        android:padding="15dp"
+        android:layout_marginBottom="20dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/txtNoAccount"
+        android:text="Nie masz jeszcze konta?"
+        android:textColor="@color/primary"
+        android:padding="5dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/txtSignUpLink"
+        android:text="Zarejestruj się"
+        android:textColor="@color/primary"
+        android:padding="5dp"
+        android:textStyle="bold"
+        android:clickable="true"
+        android:focusable="true" />
+
+</LinearLayout>

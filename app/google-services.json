@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "533499131607",
+    "project_id": "react-social-a8a4c",
+    "storage_bucket": "react-social-a8a4c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:533499131607:android:167745ee57833ff0e2e292",
+        "android_client_info": {
+          "package_name": "projekt.pb.sm"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCEumYXmUALtgNN1BLtiM8m0dzHjX99bEE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
