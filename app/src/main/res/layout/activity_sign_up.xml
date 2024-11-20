@@ -29,6 +29,66 @@
         android:src="@drawable/logo">
     </ImageView>
 
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/txtUsername"
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="10dp"
+        android:ems="10"
+        android:hint="Username"
+        android:inputType="textPersonName"
+        android:padding="9dp"
+        android:textColor="@color/primary_light"/>
+
+    <EditText
+        android:id="@+id/txtEmail"
+        android:layout_width="351dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:ems="10"
+        android:hint="Email"
+        android:inputType="textEmailAddress"
+        android:padding="9dp"
+        android:textColor="@color/primary_light"/>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/txtPassword"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:ems="10"
+        android:hint="Password"
+        android:inputType="textPassword"
+        android:padding="9dp"
+        android:textColor="@color/primary_light"/>
+
+    <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:id="@+id/txtAlreadyHaveAccount"
+    android:text="Already have an account?"
+    android:textColor="@color/primary"
+    android:padding="5dp"/>
+
+
+
+
+
+
+
+
+    <Button
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/btnSignUp"
+        android:text="Sign Up"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/primary"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:padding="10dp"/>
 
 
 
@@ -36,3 +96,4 @@
 
     </LinearLayout>
 </LinearLayout>
+
