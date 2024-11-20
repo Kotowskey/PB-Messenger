@@ -15,7 +15,9 @@ public class SignInActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_in);
 
-        getSupportActionBar().hide();
-
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
     }
 }
+
