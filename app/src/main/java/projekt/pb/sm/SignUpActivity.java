@@ -2,18 +2,19 @@ package projekt.pb.sm;
 
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.motion.widget.MotionScene;
+
 import projekt.pb.sm.databinding.ActivitySignUpBinding;
 import projekt.pb.sm.models.Users;
-
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.DatabaseReference;
 import android.app.ProgressDialog;
 import android.view.View;
 import android.widget.Toast;
+import android.content.Intent;
 
 public class SignUpActivity extends AppCompatActivity {
 
@@ -69,6 +70,13 @@ public class SignUpActivity extends AppCompatActivity {
                 {
                     Toast.makeText(SignUpActivity.this, "Please enter your username", Toast.LENGTH_SHORT).show();
                 }
+            }
+        });
+        binding.txtAlreadyHaveAccount.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(SignUpActivity.this, SignInActivity.class);
+                startActivity(intent);
             }
         });
     }
