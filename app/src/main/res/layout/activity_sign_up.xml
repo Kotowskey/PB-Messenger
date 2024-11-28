@@ -42,9 +42,9 @@
         android:textColor="@color/primary_light"/>
 
     <EditText
-        android:id="@+id/txtEmail"
-        android:layout_width="350dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:id="@+id/txtEmail"
         android:layout_margin="10dp"
         android:ems="10"
         android:hint="Email"
