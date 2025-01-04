@@ -32,4 +32,8 @@
     <color name="highlight">#FFEB3B</color>
     <color name="disabled">#9E9E9E</color>
     <color name="shadow">#000000</color>
+
+
+    <color name="white_alpha_60">#99FFFFFF</color>
+    <color name="white_alpha_20">#33FFFFFF</color>
 </resources>

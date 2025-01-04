@@ -5,10 +5,15 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
+import android.widget.Toolbar;
+
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
+
+import projekt.pb.sm.Adapter.FragmentsAdapter;
 import projekt.pb.sm.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
@@ -22,9 +27,15 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        setSupportActionBar(binding.toolbar);
 
         mAuth = FirebaseAuth.getInstance();
+
+        // Konfiguracja Toolbara
+        setSupportActionBar(binding.toolbar);
+
+        // Konfiguracja ViewPager i TabLayout
+        binding.viewPager.setAdapter(new FragmentsAdapter(getSupportFragmentManager()));
+        binding.tabLayout.setupWithViewPager(binding.viewPager);
     }
 
     @Override
