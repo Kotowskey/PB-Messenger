@@ -1,0 +1,30 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="2dp">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/receiver_background"
+        android:padding="8dp">
+
+        <TextView
+            android:id="@+id/receiverText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Receiver Message"
+            android:textColor="@color/black"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/receiverTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/receiverText"
+            android:layout_marginTop="4dp"
+            android:text="12:45 PM"
+            android:textColor="@color/black"
+            android:textSize="10sp" />
+    </RelativeLayout>
+</RelativeLayout>

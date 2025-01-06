@@ -47,7 +47,7 @@ public class FragmentsAdapter extends FragmentPagerAdapter {
         } else if (position == 2) {
             title = "Calls";
         }
-        return super.getPageTitle(position);
+        return title;
     }
 
 }
