@@ -2,8 +2,6 @@ package projekt.pb.sm;
 
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.motion.widget.MotionScene;
-
 import projekt.pb.sm.databinding.ActivitySignUpBinding;
 import projekt.pb.sm.models.Users;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -12,6 +10,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 import android.app.ProgressDialog;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 import android.content.Intent;
@@ -19,7 +18,6 @@ import android.content.Intent;
 public class SignUpActivity extends AppCompatActivity {
 
     ActivitySignUpBinding binding;
-
     private FirebaseAuth mAuth;
     FirebaseDatabase database;
     ProgressDialog progressDialog;
@@ -30,48 +28,65 @@ public class SignUpActivity extends AppCompatActivity {
         binding = ActivitySignUpBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        // Inicjalizacja Firebase
         mAuth = FirebaseAuth.getInstance();
-        database = FirebaseDatabase.getInstance();
+        database = FirebaseDatabase.getInstance("https://react-social-a8a4c-default-rtdb.europe-west1.firebasedatabase.app/");
 
+        // Ukrycie ActionBar
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
         }
 
+        // Konfiguracja dialogu postępu
         progressDialog = new ProgressDialog(SignUpActivity.this);
         progressDialog.setTitle("Creating Account");
         progressDialog.setMessage("We're creating your account");
 
+        // Obsługa przycisku "Sign Up"
         binding.btnSignUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!binding.txtUsername.getText().toString().isEmpty() && !binding.txtEmail.getText().toString().isEmpty() && !binding.txtPassword.getText().toString().isEmpty())
-                {
+                String username = binding.txtUsername.getText().toString();
+                String email = binding.txtEmail.getText().toString();
+                String password = binding.txtPassword.getText().toString();
+
+                if (!username.isEmpty() && !email.isEmpty() && !password.isEmpty()) {
                     progressDialog.show();
-                    mAuth.createUserWithEmailAndPassword(binding.txtEmail.getText().toString(), binding.txtPassword.getText().toString()).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(Task<AuthResult> task) {
-                            if (task.isSuccessful())
-                            {
-                                Users user = new Users(binding.txtUsername.getText().toString(), binding.txtEmail.getText().toString(), binding.txtPassword.getText().toString());
-                                String id = task.getResult().getUser().getUid();
-                                database.getReference().child("Users").child(id).setValue(user);
-                                progressDialog.dismiss();
-                                Toast.makeText(SignUpActivity.this, "Account created successfully", Toast.LENGTH_SHORT).show();
-                            }
-                            else
-                            {
-                                progressDialog.dismiss();
-                                Toast.makeText(SignUpActivity.this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    });
-                }
-                else
-                {
-                    Toast.makeText(SignUpActivity.this, "Please enter your username", Toast.LENGTH_SHORT).show();
+
+                    mAuth.createUserWithEmailAndPassword(email, password)
+                            .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                                @Override
+                                public void onComplete(Task<AuthResult> task) {
+                                    progressDialog.dismiss();
+                                    if (task.isSuccessful()) {
+                                        String userId = task.getResult().getUser().getUid();
+                                        Users user = new Users(username, email, password);
+
+                                        database.getReference().child("Users").child(userId).setValue(user)
+                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                    @Override
+                                                    public void onComplete(Task<Void> task) {
+                                                        if (task.isSuccessful()) {
+                                                            Toast.makeText(SignUpActivity.this, "Account created successfully", Toast.LENGTH_SHORT).show();
+                                                        } else {
+                                                            Log.e("FirebaseError", "Failed to add user to database", task.getException());
+                                                            Toast.makeText(SignUpActivity.this, "Database error: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                                        }
+                                                    }
+                                                });
+                                    } else {
+                                        Log.e("FirebaseError", "Registration failed", task.getException());
+                                        Toast.makeText(SignUpActivity.this, "Authentication failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            });
+                } else {
+                    Toast.makeText(SignUpActivity.this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
                 }
             }
         });
+
+        // Obsługa linku "Already have an account?"
         binding.txtAlreadyHaveAccount.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
