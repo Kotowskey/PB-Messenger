@@ -1,39 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Material 3 Color Scheme -->
+    <color name="seed">#6750A4</color>
+
+    <color name="md_theme_light_primary">#6750A4</color>
+    <color name="md_theme_light_onPrimary">#FFFFFF</color>
+    <color name="md_theme_light_primaryContainer">#EADDFF</color>
+    <color name="md_theme_light_onPrimaryContainer">#21005E</color>
+    <color name="md_theme_light_secondary">#625B71</color>
+    <color name="md_theme_light_onSecondary">#FFFFFF</color>
+    <color name="md_theme_light_secondaryContainer">#E8DEF8</color>
+    <color name="md_theme_light_onSecondaryContainer">#1E192B</color>
+    <color name="md_theme_light_surface">#FEF7FF</color>
+    <color name="md_theme_light_onSurface">#1D1B20</color>
+    <color name="md_theme_light_surfaceVariant">#E7E0EB</color>
+    <color name="md_theme_light_onSurfaceVariant">#49454E</color>
+    <color name="md_theme_light_outline">#79747E</color>
+
+    <!-- Legacy colors -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <!-- Primary Colors -->
-    <color name="primary">#21C56B</color>
-    <color name="primary_dark">#1A9C57</color>
-    <color name="primary_light">#53E195</color>
-
-    <!-- Secondary Colors -->
-    <color name="secondary">#03DAC6</color>
-    <color name="secondary_dark">#018786</color>
-    <color name="secondary_light">#A7FFEB</color>
-
-    <!-- Background Colors -->
-    <color name="background">#FFFFFF</color>
-    <color name="background_dark">#F0F0F0</color>
-    <color name="surface">#FFFFFF</color>
-
-    <!-- Text Colors -->
-    <color name="text_primary">#000000</color>
-    <color name="text_secondary">#757575</color>
-    <color name="text_on_primary">#FFFFFF</color>
-    <color name="text_on_secondary">#000000</color>
-
-    <!-- Error Colors -->
-    <color name="error">#B00020</color>
-    <color name="error_light">#CF6679</color>
-
-    <!-- Other Colors -->
-    <color name="divider">#BDBDBD</color>
-    <color name="highlight">#FFEB3B</color>
-    <color name="disabled">#9E9E9E</color>
-    <color name="shadow">#000000</color>
-
-
-    <color name="white_alpha_60">#99FFFFFF</color>
-    <color name="white_alpha_20">#33FFFFFF</color>
+    <color name="text_primary">#1D1B20</color>
+    <color name="text_secondary">#49454E</color>
+    <color name="divider">#79747E</color>
 </resources>

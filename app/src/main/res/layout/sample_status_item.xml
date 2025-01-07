@@ -16,7 +16,7 @@
             android:layout_height="48dp"
             android:src="@drawable/avatar"
             app:civ_border_width="2dp"
-            app:civ_border_color="@color/primary"/>
+            app:civ_border_color="?attr/colorPrimary"/>
 
         <View
             android:id="@+id/status_indicator"
@@ -40,14 +40,14 @@
             android:layout_height="wrap_content"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:textColor="@color/black"/>
+            android:textColor="?attr/colorOnSurface"/>
 
         <TextView
             android:id="@+id/userStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="14sp"
-            android:textColor="@color/text_secondary"/>
+            android:textColor="?attr/colorOnSurfaceVariant"/>
     </LinearLayout>
 
 </LinearLayout>
