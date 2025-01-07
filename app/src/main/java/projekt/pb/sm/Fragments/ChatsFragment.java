@@ -54,22 +54,10 @@ public class ChatsFragment extends Fragment {
                     }
                 }
                 adapter.notifyDataSetChanged();
-
-                // Update visibility of no chats message
-                if (list.isEmpty()) {
-                    binding.noChatsText.setVisibility(View.VISIBLE);
-                    binding.chatRecyclerView.setVisibility(View.GONE);
-                } else {
-                    binding.noChatsText.setVisibility(View.GONE);
-                    binding.chatRecyclerView.setVisibility(View.VISIBLE);
-                }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                binding.noChatsText.setText("Error loading chats: " + error.getMessage());
-                binding.noChatsText.setVisibility(View.VISIBLE);
-                binding.chatRecyclerView.setVisibility(View.GONE);
             }
         });
 

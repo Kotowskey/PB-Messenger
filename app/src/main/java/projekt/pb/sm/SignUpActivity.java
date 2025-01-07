@@ -60,15 +60,7 @@ public class SignUpActivity extends AppCompatActivity {
                                     progressDialog.dismiss();
                                     if (task.isSuccessful()) {
                                         String userId = task.getResult().getUser().getUid();
-                                        Users user = new Users(
-                                                "https://firebasestorage.googleapis.com/v0/b/your-bucket/default-avatar.jpg", // domyślne zdjęcie
-                                                username,
-                                                email,
-                                                password,
-                                                userId, // z task.getResult().getUser().getUid()
-                                                "", // pusta ostatnia wiadomość
-                                                "Hey there! I am using this chat app" // domyślny status
-                                        );
+                                        Users user = new Users(username, email, password);
 
                                         database.getReference().child("Users").child(userId).setValue(user)
                                                 .addOnCompleteListener(new OnCompleteListener<Void>() {
