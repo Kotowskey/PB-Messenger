@@ -15,16 +15,12 @@ import android.content.Intent;
 import androidx.annotation.NonNull;
 import projekt.pb.sm.databinding.ActivitySignUpBinding;
 
-
-
-
 public class SignInActivity extends AppCompatActivity {
 
     ActivitySignInBinding binding;
     ProgressDialog progressDialog;
     FirebaseAuth mAuth;
     FirebaseDatabase firebaseDatabase;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,42 +32,42 @@ public class SignInActivity extends AppCompatActivity {
             getSupportActionBar().hide();
         }
 
-         mAuth = FirebaseAuth.getInstance();
-         firebaseDatabase = FirebaseDatabase.getInstance();
+        mAuth = FirebaseAuth.getInstance();
+        firebaseDatabase = FirebaseDatabase.getInstance("https://react-social-a8a4c-default-rtdb.europe-west1.firebasedatabase.app/");
 
-         progressDialog = new ProgressDialog(SignInActivity.this);
-            progressDialog.setTitle("Login");
-            progressDialog.setMessage("Logowanie w trakcie");
+        progressDialog = new ProgressDialog(SignInActivity.this);
+        progressDialog.setTitle("Login");
+        progressDialog.setMessage("Logowanie w trakcie");
 
-            binding.btnSignIn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (!binding.txtEmail.getText().toString().isEmpty() && !binding.txtPassword.getText().toString().isEmpty())
-                    {
-                        progressDialog.show();
-                        mAuth.signInWithEmailAndPassword(binding.txtEmail.getText().toString(), binding.txtPassword.getText().toString())
-                                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                            @Override
-                            public void onComplete(@NonNull Task<AuthResult> task) {
-                                progressDialog.dismiss();
-                                if (task.isSuccessful())
-                                {
-                                    Intent intent = new Intent(SignInActivity.this, MainActivity.class);
-                                    startActivity(intent);
+        binding.btnSignIn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!binding.txtEmail.getText().toString().isEmpty() && !binding.txtPassword.getText().toString().isEmpty())
+                {
+                    progressDialog.show();
+                    mAuth.signInWithEmailAndPassword(binding.txtEmail.getText().toString(), binding.txtPassword.getText().toString())
+                            .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                                @Override
+                                public void onComplete(@NonNull Task<AuthResult> task) {
+                                    progressDialog.dismiss();
+                                    if (task.isSuccessful())
+                                    {
+                                        Intent intent = new Intent(SignInActivity.this, MainActivity.class);
+                                        startActivity(intent);
+                                    }
+                                    else
+                                    {
+                                        Toast.makeText(SignInActivity.this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                    }
                                 }
-                                else
-                                {
-                                    Toast.makeText(SignInActivity.this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                        });
-                    }
-                    else
-                    {
-                        Toast.makeText(SignInActivity.this, "Please fill all the fields", Toast.LENGTH_SHORT).show();
-                    }
+                            });
                 }
-            });
+                else
+                {
+                    Toast.makeText(SignInActivity.this, "Please fill all the fields", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
         if(mAuth.getCurrentUser()!=null)
         {
@@ -85,7 +81,5 @@ public class SignInActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-
     }
 }
-

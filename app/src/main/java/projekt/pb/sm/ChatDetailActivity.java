@@ -34,7 +34,7 @@ public class ChatDetailActivity extends AppCompatActivity {
         binding = ActivityChatDetailBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        database = FirebaseDatabase.getInstance();
+        database = FirebaseDatabase.getInstance("https://react-social-a8a4c-default-rtdb.europe-west1.firebasedatabase.app/");
         auth = FirebaseAuth.getInstance();
 
         senderId = auth.getUid();

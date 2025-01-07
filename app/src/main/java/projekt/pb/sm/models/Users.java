@@ -4,6 +4,10 @@ public class Users {
 
     String profilePic, userName, mail, password, userId, lastMessage, status;
 
+    // Add no-argument constructor for Firebase
+    public Users() {
+    }
+
     public Users(String profilePic, String userName, String mail, String password, String userId, String lastMessage, String status) {
         this.profilePic = profilePic;
         this.userName = userName;

@@ -33,7 +33,7 @@ public class ChatsFragment extends Fragment {
                              Bundle savedInstanceState) {
         binding = FragmentChatsBinding.inflate(inflater, container, false);
 
-        database = FirebaseDatabase.getInstance();
+        database = FirebaseDatabase.getInstance("https://react-social-a8a4c-default-rtdb.europe-west1.firebasedatabase.app/");
         auth = FirebaseAuth.getInstance();
 
         UsersAdapter adapter = new UsersAdapter(list, getContext());
