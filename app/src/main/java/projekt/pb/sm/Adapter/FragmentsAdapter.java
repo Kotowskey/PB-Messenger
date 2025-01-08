@@ -6,7 +6,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 
-import projekt.pb.sm.Fragments.CallsFragment;
 import projekt.pb.sm.Fragments.ChatsFragment;
 import projekt.pb.sm.Fragments.StatusFragment;
 
@@ -23,8 +22,6 @@ public class FragmentsAdapter extends FragmentPagerAdapter {
                 return new ChatsFragment();
             case 1:
                 return new StatusFragment();
-            case 2:
-                return new CallsFragment();
             default:
                 return null;
         }
@@ -32,7 +29,7 @@ public class FragmentsAdapter extends FragmentPagerAdapter {
 
     @Override
     public int getCount() {
-        return 3;
+        return 2; // Changed from 3 to 2
     }
 
     @Nullable
@@ -44,11 +41,7 @@ public class FragmentsAdapter extends FragmentPagerAdapter {
             title = "Chats";
         } else if (position == 1) {
             title = "Status";
-        } else if (position == 2) {
-            title = "Calls";
         }
         return title;
     }
-
 }
-
