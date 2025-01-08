@@ -79,8 +79,6 @@ public class MainActivity extends AppCompatActivity {
 
         if (itemId == R.id.settings) {
             Toast.makeText(this, "Settings is clicked", Toast.LENGTH_SHORT).show();
-        } else if (itemId == R.id.groupChat) {
-            Toast.makeText(this, "Group Chat is clicked", Toast.LENGTH_SHORT).show();
         } else if (itemId == R.id.logout) {
             // Update status to offline before logging out
             String currentId = mAuth.getUid();
