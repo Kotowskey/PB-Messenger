@@ -20,22 +20,25 @@ import projekt.pb.sm.models.Message;
 
 public class ChatDetailActivity extends AppCompatActivity {
 
-    ActivityChatDetailBinding binding;
-    FirebaseDatabase database;
-    FirebaseAuth auth;
-    String senderId;
-    String receiverId;
-    String userName;
-    String profilePic;
-    String senderRoom;
-    String receiverRoom;
+    private ActivityChatDetailBinding binding;
+    private FirebaseDatabase database;
+    private FirebaseAuth auth;
+    private String senderId;
+    private String receiverId;
+    private String userName;
+    private String profilePic;
+    private String senderRoom;
+    private String receiverRoom;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Inflate binding and set content view
         binding = ActivityChatDetailBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        // Initialize Firebase instances
         database = FirebaseDatabase.getInstance("https://react-social-a8a4c-default-rtdb.europe-west1.firebasedatabase.app/");
         auth = FirebaseAuth.getInstance();
 
@@ -49,29 +52,27 @@ public class ChatDetailActivity extends AppCompatActivity {
         senderRoom = senderId + receiverId;
         receiverRoom = receiverId + senderId;
 
-        // Set up UI
+        // Set up UI elements
         binding.userName.setText(userName);
         Picasso.get()
                 .load(profilePic)
                 .placeholder(R.drawable.avatar)
                 .into(binding.profileImage);
 
-        binding.backArrow.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+        binding.backArrow.setOnClickListener(v -> finish());
 
-        // Set up RecyclerView
+        // Initialize RecyclerView and Adapter
         final ArrayList<Message> messageList = new ArrayList<>();
         final ChatAdapter chatAdapter = new ChatAdapter(messageList, this, receiverId);
-        binding.chatRecyclerView.setAdapter(chatAdapter);
 
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        binding.chatRecyclerView.setLayoutManager(layoutManager);
+        // Ensure binding is not null before accessing chatRecyclerView
+        if (binding != null && binding.chatRecyclerView != null) {
+            binding.chatRecyclerView.setAdapter(chatAdapter);
+            LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+            binding.chatRecyclerView.setLayoutManager(layoutManager);
+        }
 
-        // Load messages
+        // Load messages from Firebase
         database.getReference().child("chats")
                 .child(senderRoom)
                 .addValueEventListener(new ValueEventListener() {
@@ -87,47 +88,41 @@ public class ChatDetailActivity extends AppCompatActivity {
                         }
                         chatAdapter.notifyDataSetChanged();
 
-                        // Scroll to bottom when new message arrives
-                        if (messageList.size() > 0) {
+                        // Scroll to the bottom when new messages arrive
+                        if (messageList.size() > 0 && binding != null) {
                             binding.chatRecyclerView.smoothScrollToPosition(messageList.size() - 1);
                         }
                     }
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
-                        // Handle error
+                        // Handle Firebase error
                     }
                 });
 
-        // Send message
-        binding.send.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String messageText = binding.etMessage.getText().toString().trim();
+        // Send message functionality
+        binding.send.setOnClickListener(v -> {
+            String messageText = binding.etMessage.getText().toString().trim();
 
-                if (!messageText.isEmpty()) {
-                    String timestamp = String.valueOf(new Date().getTime());
-                    final Message message = new Message(null, messageText, senderId, timestamp);
+            if (!messageText.isEmpty()) {
+                String timestamp = String.valueOf(new Date().getTime());
+                Message message = new Message(null, messageText, senderId, timestamp);
 
-                    // Clear input field
-                    binding.etMessage.setText("");
+                // Clear message input field
+                binding.etMessage.setText("");
 
-                    // Save message to sender's room
-                    database.getReference().child("chats")
-                            .child(senderRoom)
-                            .push()
-                            .setValue(message)
-                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void unused) {
-                                    // Save message to receiver's room
-                                    database.getReference().child("chats")
-                                            .child(receiverRoom)
-                                            .push()
-                                            .setValue(message);
-                                }
-                            });
-                }
+                // Save message to sender's room
+                database.getReference().child("chats")
+                        .child(senderRoom)
+                        .push()
+                        .setValue(message)
+                        .addOnSuccessListener(unused -> {
+                            // Save message to receiver's room
+                            database.getReference().child("chats")
+                                    .child(receiverRoom)
+                                    .push()
+                                    .setValue(message);
+                        });
             }
         });
     }
@@ -135,7 +130,6 @@ public class ChatDetailActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Set user status to online
         if (senderId != null) {
             database.getReference().child("Users").child(senderId).child("status").setValue("online");
         }
@@ -144,7 +138,6 @@ public class ChatDetailActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        // Set user status to offline
         if (senderId != null) {
             database.getReference().child("Users").child(senderId).child("status").setValue("offline");
         }
@@ -153,7 +146,6 @@ public class ChatDetailActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Clean up
         if (senderId != null) {
             database.getReference().child("Users").child(senderId).child("status").setValue("offline");
         }
