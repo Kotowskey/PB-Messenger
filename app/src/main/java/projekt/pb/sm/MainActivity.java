@@ -35,7 +35,6 @@ public class MainActivity extends AppCompatActivity {
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // Konfiguracja ViewPager i TabLayout
         binding.viewPager.setAdapter(new FragmentsAdapter(getSupportFragmentManager()));
         binding.tabLayout.setupWithViewPager(binding.viewPager);
     }
@@ -78,9 +77,10 @@ public class MainActivity extends AppCompatActivity {
         int itemId = item.getItemId();
 
         if (itemId == R.id.settings) {
-            Toast.makeText(this, "Settings is clicked", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+            startActivity(intent);
+            return true;
         } else if (itemId == R.id.logout) {
-            // Update status to offline before logging out
             String currentId = mAuth.getUid();
             if (currentId != null) {
                 database.getReference().child("Users").child(currentId).child("status").setValue("offline")
@@ -96,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
                 finish();
             }
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
