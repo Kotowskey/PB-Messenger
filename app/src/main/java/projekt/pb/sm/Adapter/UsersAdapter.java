@@ -12,7 +12,10 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.squareup.picasso.Picasso;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 import de.hdodenhof.circleimageview.CircleImageView;
 import projekt.pb.sm.ChatDetailActivity;
 import projekt.pb.sm.R;
@@ -43,15 +46,21 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.ViewHolder> 
         Picasso.get().load(user.getProfilePic()).placeholder(R.drawable.avatar).into(holder.image);
         holder.userName.setText(user.getUserName());
 
-        // Ustawienie tekstu ostatniej wiadomości
+        // Pokazywanie statusu online/offline
+        if ("online".equals(user.getStatus())) {
+            holder.statusIndicator.setVisibility(View.VISIBLE);
+        } else {
+            holder.statusIndicator.setVisibility(View.GONE);
+        }
+
+        // Wyświetlanie ostatniej wiadomości i statusu
         if (user.getLastMessage() != null) {
             String lastMessageText = user.getLastMessage();
             if (user.getLastMessageSenderId() != null && user.getLastMessageSenderId().equals(currentUserId)) {
-                lastMessageText = "You: " + lastMessageText;
+                lastMessageText = "Ty: " + lastMessageText;
             }
             holder.lastMessage.setText(lastMessageText);
 
-            // Styl tekstu w zależności od stanu odczytu
             if (!user.isLastMessageRead() && !user.getLastMessageSenderId().equals(currentUserId)) {
                 holder.lastMessage.setTypeface(holder.lastMessage.getTypeface(), Typeface.BOLD);
                 holder.userName.setTypeface(holder.userName.getTypeface(), Typeface.BOLD);
@@ -80,12 +89,14 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.ViewHolder> 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         CircleImageView image;
         TextView userName, lastMessage;
+        View statusIndicator;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             image = itemView.findViewById(R.id.profile_image);
             userName = itemView.findViewById(R.id.userName);
             lastMessage = itemView.findViewById(R.id.lastMessage);
+            statusIndicator = itemView.findViewById(R.id.status_indicator);
         }
     }
 }

@@ -4,16 +4,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
-import android.widget.Toolbar;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
-
+import java.util.HashMap;
 import projekt.pb.sm.Adapter.FragmentsAdapter;
 import projekt.pb.sm.databinding.ActivityMainBinding;
 
@@ -44,7 +40,10 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         String currentId = FirebaseAuth.getInstance().getUid();
         if (currentId != null) {
-            database.getReference().child("Users").child(currentId).child("status").setValue("online");
+            HashMap<String, Object> updates = new HashMap<>();
+            updates.put("status", "online");
+            updates.put("lastSeen", String.valueOf(System.currentTimeMillis()));
+            database.getReference().child("Users").child(currentId).updateChildren(updates);
         }
     }
 
@@ -53,7 +52,10 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         String currentId = FirebaseAuth.getInstance().getUid();
         if (currentId != null) {
-            database.getReference().child("Users").child(currentId).child("status").setValue("offline");
+            HashMap<String, Object> updates = new HashMap<>();
+            updates.put("status", "offline");
+            updates.put("lastSeen", String.valueOf(System.currentTimeMillis()));
+            database.getReference().child("Users").child(currentId).updateChildren(updates);
         }
     }
 
@@ -62,7 +64,10 @@ public class MainActivity extends AppCompatActivity {
         super.onStop();
         String currentId = FirebaseAuth.getInstance().getUid();
         if (currentId != null) {
-            database.getReference().child("Users").child(currentId).child("status").setValue("offline");
+            HashMap<String, Object> updates = new HashMap<>();
+            updates.put("status", "offline");
+            updates.put("lastSeen", String.valueOf(System.currentTimeMillis()));
+            database.getReference().child("Users").child(currentId).updateChildren(updates);
         }
     }
 
@@ -83,7 +88,10 @@ public class MainActivity extends AppCompatActivity {
         } else if (itemId == R.id.logout) {
             String currentId = mAuth.getUid();
             if (currentId != null) {
-                database.getReference().child("Users").child(currentId).child("status").setValue("offline")
+                HashMap<String, Object> updates = new HashMap<>();
+                updates.put("status", "offline");
+                updates.put("lastSeen", String.valueOf(System.currentTimeMillis()));
+                database.getReference().child("Users").child(currentId).updateChildren(updates)
                         .addOnCompleteListener(task -> {
                             mAuth.signOut();
                             Intent intent = new Intent(MainActivity.this, SignInActivity.class);
@@ -107,7 +115,10 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         String currentId = FirebaseAuth.getInstance().getUid();
         if (currentId != null) {
-            database.getReference().child("Users").child(currentId).child("status").setValue("offline");
+            HashMap<String, Object> updates = new HashMap<>();
+            updates.put("status", "offline");
+            updates.put("lastSeen", String.valueOf(System.currentTimeMillis()));
+            database.getReference().child("Users").child(currentId).updateChildren(updates);
         }
         binding = null;
     }

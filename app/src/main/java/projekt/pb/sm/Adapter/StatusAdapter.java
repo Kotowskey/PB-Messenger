@@ -8,7 +8,10 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.squareup.picasso.Picasso;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 import de.hdodenhof.circleimageview.CircleImageView;
 import projekt.pb.sm.R;
 import projekt.pb.sm.models.Users;
@@ -39,10 +42,41 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
                 .into(holder.profileImage);
 
         holder.userName.setText(users.getUserName());
-        holder.statusIndicator.setVisibility(
-                "online".equals(users.getStatus()) ? View.VISIBLE : View.GONE
-        );
-        holder.userStatus.setText(users.getStatus());
+
+        // Logika statusu online/offline
+        if ("online".equals(users.getStatus())) {
+            holder.statusIndicator.setVisibility(View.VISIBLE);
+            holder.userStatus.setText("online");
+        } else {
+            holder.statusIndicator.setVisibility(View.GONE);
+
+            // Wyświetlanie czasu ostatniej aktywności
+            if (users.getLastSeen() != null) {
+                try {
+                    long lastSeenTime = Long.parseLong(users.getLastSeen());
+                    String lastSeenStr = formatLastSeen(lastSeenTime);
+                    holder.userStatus.setText("ostatnio widziany " + lastSeenStr);
+                } catch (NumberFormatException e) {
+                    holder.userStatus.setText("offline");
+                }
+            } else {
+                holder.userStatus.setText("offline");
+            }
+        }
+    }
+
+    private String formatLastSeen(long timestamp) {
+        long now = System.currentTimeMillis();
+        long diff = now - timestamp;
+
+        // Jeśli mniej niż 24 godziny temu
+        if (diff < 24 * 60 * 60 * 1000) {
+            return new SimpleDateFormat("HH:mm", Locale.getDefault())
+                    .format(new Date(timestamp));
+        } else {
+            return new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
+                    .format(new Date(timestamp));
+        }
     }
 
     @Override

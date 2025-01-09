@@ -2,29 +2,37 @@ package projekt.pb.sm.models;
 
 public class Users {
     private String userId;
-    private String userName;          // wymagane przez reguły
-    private String mail;              // wymagane przez reguły
-    private String password;          // przechowywanie hasła (opcjonalne)
+    private String userName;
+    private String mail;
+    private String password;
     private String profilePic;
     private String lastMessage;
     private String status;
     private String lastMessageSenderId;
     private boolean isLastMessageRead;
     private String lastMessageTimestamp;
+    private String lastSeen; // Nowe pole dla znacznika czasowego ostatniej aktywności
 
-    // Pusty konstruktor wymagany przez Firebase
     public Users() {
     }
 
-    // Konstruktor do tworzenia użytkownika w trakcie rejestracji
     public Users(String userName, String mail, String password) {
         this.userName = userName;
         this.mail = mail;
         this.password = password;
     }
 
+    // Istniejące gettery i settery...
 
-    // Gettery i settery
+    public String getLastSeen() {
+        return lastSeen;
+    }
+
+    public void setLastSeen(String lastSeen) {
+        this.lastSeen = lastSeen;
+    }
+
+    // Wszystkie pozostałe gettery i settery pozostają bez zmian
     public String getUserId() {
         return userId;
     }
