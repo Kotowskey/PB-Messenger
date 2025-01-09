@@ -29,30 +29,28 @@ public class ChatDetailActivity extends AppCompatActivity {
     private String profilePic;
     private String senderRoom;
     private String receiverRoom;
+    private ValueEventListener chatListener;
+    private final ArrayList<Message> messageList = new ArrayList<>();
+    private ChatAdapter chatAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Inflate binding and set content view
         binding = ActivityChatDetailBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Initialize Firebase instances
         database = FirebaseDatabase.getInstance("https://react-social-a8a4c-default-rtdb.europe-west1.firebasedatabase.app/");
         auth = FirebaseAuth.getInstance();
 
-        // Get data from intent
         senderId = auth.getUid();
         receiverId = getIntent().getStringExtra("userId");
         userName = getIntent().getStringExtra("userName");
         profilePic = getIntent().getStringExtra("profilePic");
 
-        // Set up chat rooms
         senderRoom = senderId + receiverId;
         receiverRoom = receiverId + senderId;
 
-        // Set up UI elements
         binding.userName.setText(userName);
         Picasso.get()
                 .load(profilePic)
@@ -61,63 +59,34 @@ public class ChatDetailActivity extends AppCompatActivity {
 
         binding.backArrow.setOnClickListener(v -> finish());
 
-        // Initialize RecyclerView and Adapter
-        final ArrayList<Message> messageList = new ArrayList<>();
-        final ChatAdapter chatAdapter = new ChatAdapter(messageList, this, receiverId);
+        chatAdapter = new ChatAdapter(messageList, this, receiverId);
+        binding.chatRecyclerView.setAdapter(chatAdapter);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        binding.chatRecyclerView.setLayoutManager(layoutManager);
 
-        // Ensure binding is not null before accessing chatRecyclerView
-        if (binding != null && binding.chatRecyclerView != null) {
-            binding.chatRecyclerView.setAdapter(chatAdapter);
-            LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-            binding.chatRecyclerView.setLayoutManager(layoutManager);
-        }
+        // Mark messages as read when entering chat
+        markMessagesAsRead();
 
-        // Load messages from Firebase
-        database.getReference().child("chats")
-                .child(senderRoom)
-                .addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        messageList.clear();
-                        for (DataSnapshot messageSnap : snapshot.getChildren()) {
-                            Message message = messageSnap.getValue(Message.class);
-                            if (message != null) {
-                                message.setMessageId(messageSnap.getKey());
-                                messageList.add(message);
-                            }
-                        }
-                        chatAdapter.notifyDataSetChanged();
+        // Set up chat listener
+        setupChatListener();
 
-                        // Scroll to the bottom when new messages arrive
-                        if (messageList.size() > 0 && binding != null) {
-                            binding.chatRecyclerView.smoothScrollToPosition(messageList.size() - 1);
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        // Handle Firebase error
-                    }
-                });
-
-        // Send message functionality
         binding.send.setOnClickListener(v -> {
+            if (binding == null) return;
+
             String messageText = binding.etMessage.getText().toString().trim();
 
             if (!messageText.isEmpty()) {
                 String timestamp = String.valueOf(new Date().getTime());
                 Message message = new Message(null, messageText, senderId, timestamp);
+                message.setRead(false);
 
-                // Clear message input field
                 binding.etMessage.setText("");
 
-                // Save message to sender's room
                 database.getReference().child("chats")
                         .child(senderRoom)
                         .push()
                         .setValue(message)
                         .addOnSuccessListener(unused -> {
-                            // Save message to receiver's room
                             database.getReference().child("chats")
                                     .child(receiverRoom)
                                     .push()
@@ -125,6 +94,73 @@ public class ChatDetailActivity extends AppCompatActivity {
                         });
             }
         });
+    }
+
+    private void setupChatListener() {
+        chatListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (binding == null) return;
+
+                messageList.clear();
+                for (DataSnapshot messageSnap : snapshot.getChildren()) {
+                    Message message = messageSnap.getValue(Message.class);
+                    if (message != null) {
+                        message.setMessageId(messageSnap.getKey());
+                        messageList.add(message);
+                    }
+                }
+                if (chatAdapter != null) {
+                    chatAdapter.notifyDataSetChanged();
+                }
+
+                if (messageList.size() > 0 && binding != null && binding.chatRecyclerView != null) {
+                    binding.chatRecyclerView.smoothScrollToPosition(messageList.size() - 1);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // Handle Firebase error
+            }
+        };
+
+        database.getReference().child("chats")
+                .child(senderRoom)
+                .addValueEventListener(chatListener);
+    }
+
+    private void markMessagesAsRead() {
+        database.getReference().child("chats")
+                .child(senderRoom)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        for (DataSnapshot messageSnap : snapshot.getChildren()) {
+                            Message message = messageSnap.getValue(Message.class);
+                            if (message != null && !message.isRead() && !message.getSenderId().equals(senderId)) {
+                                // Update in sender's room
+                                database.getReference().child("chats")
+                                        .child(senderRoom)
+                                        .child(messageSnap.getKey())
+                                        .child("read")
+                                        .setValue(true);
+
+                                // Update in receiver's room
+                                database.getReference().child("chats")
+                                        .child(receiverRoom)
+                                        .child(messageSnap.getKey())
+                                        .child("read")
+                                        .setValue(true);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        // Handle error
+                    }
+                });
     }
 
     @Override
@@ -149,6 +185,14 @@ public class ChatDetailActivity extends AppCompatActivity {
         if (senderId != null) {
             database.getReference().child("Users").child(senderId).child("status").setValue("offline");
         }
+
+        // Remove chat listener
+        if (chatListener != null) {
+            database.getReference().child("chats")
+                    .child(senderRoom)
+                    .removeEventListener(chatListener);
+        }
+
         binding = null;
     }
 }
