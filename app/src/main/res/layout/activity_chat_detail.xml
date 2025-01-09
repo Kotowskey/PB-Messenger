@@ -5,17 +5,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
     tools:context=".ChatDetailActivity">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        app:elevation="0dp">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            style="@style/Widget.Material3.Toolbar">
+            android:background="?attr/colorSurface"
+            style="@style/Widget.Material3.Toolbar.Surface">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -29,7 +33,7 @@
                     android:layout_height="48dp"
                     android:src="@drawable/ic_back"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    app:tint="?attr/colorOnPrimary"/>
+                    app:tint="?attr/colorPrimary"/>
 
                 <de.hdodenhof.circleimageview.CircleImageView
                     android:id="@+id/profileImage"
@@ -37,7 +41,7 @@
                     android:layout_height="40dp"
                     android:layout_marginStart="8dp"
                     android:src="@drawable/avatar"
-                    app:civ_border_color="?attr/colorOnPrimary"
+                    app:civ_border_color="?attr/colorPrimary"
                     app:civ_border_width="1dp"/>
 
                 <TextView
@@ -46,7 +50,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
                     android:textAppearance="?attr/textAppearanceTitleMedium"
-                    android:textColor="?attr/colorOnPrimary"/>
+                    android:textColor="?attr/colorOnSurface"/>
 
             </LinearLayout>
 
@@ -59,6 +63,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginBottom="80dp"
+        android:clipToPadding="false"
+        android:padding="8dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
     <com.google.android.material.card.MaterialCardView
@@ -66,7 +72,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:layout_margin="8dp"
-        style="@style/Widget.Material3.CardView.Filled">
+        app:cardElevation="2dp"
+        style="@style/Widget.Material3.CardView.Elevated">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -79,15 +86,19 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginEnd="8dp"
+                app:boxBackgroundColor="@android:color/transparent"
+                app:hintEnabled="false"
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etMessage"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Type a message"
+                    android:hint="Napisz wiadomość..."
+                    android:textColorHint="?attr/colorOnSurfaceVariant"
                     android:inputType="textMultiLine"
-                    android:maxLines="4"/>
+                    android:maxLines="4"
+                    android:textSize="16sp"/>
 
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -96,6 +107,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/ic_send"
+                app:fabSize="mini"
                 app:tint="?attr/colorOnPrimaryContainer"
                 style="@style/Widget.Material3.FloatingActionButton.Primary"/>
 

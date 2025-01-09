@@ -2,13 +2,17 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/settings"
-        android:title="Settings"
+    <item
+        android:id="@+id/settings"
+        android:title="Ustawienia"
         android:icon="@drawable/ic_settings"
+        android:contentDescription="Otwórz ustawienia aplikacji"
         app:showAsAction="never"/>
 
-    <item android:id="@+id/logout"
-        android:title="Logout"
+    <item
+        android:id="@+id/logout"
+        android:title="Wyloguj się"
         android:icon="@drawable/ic_logout"
+        android:contentDescription="Wyloguj się z aplikacji"
         app:showAsAction="never"/>
 </menu>

@@ -3,25 +3,31 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="?attr/colorSurface">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="?attr/colorSurface"
+        app:elevation="0dp">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Settings"
+            app:title="Ustawienia"
+            app:titleTextColor="?attr/colorOnSurface"
             app:navigationIcon="@drawable/ic_back"
-            style="@style/Widget.Material3.Toolbar"/>
+            app:navigationIconTint="?attr/colorPrimary"
+            style="@style/Widget.Material3.Toolbar.Surface"/>
 
     </com.google.android.material.appbar.AppBarLayout>
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:clipToPadding="false">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -33,7 +39,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                style="@style/Widget.Material3.CardView.Filled">
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorError"
+                style="@style/Widget.Material3.CardView.Outlined">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -44,7 +53,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Danger Zone"
+                        android:text="Strefa niebezpieczna"
                         android:textAppearance="?attr/textAppearanceTitleMedium"
                         android:textColor="?attr/colorError"
                         android:layout_marginBottom="16dp"/>
@@ -53,10 +62,11 @@
                         android:id="@+id/btnDeleteAccount"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Delete Account"
-                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:text="Usuń konto"
                         android:textColor="?attr/colorError"
-                        app:strokeColor="?attr/colorError"/>
+                        app:strokeColor="?attr/colorError"
+                        app:rippleColor="?attr/colorErrorContainer"
+                        style="@style/Widget.Material3.Button.OutlinedButton"/>
 
                 </LinearLayout>
 
