@@ -1,20 +1,17 @@
 package projekt.pb.sm.models;
 
 public class Users {
+    String profilePic, userName, mail, password, userId, status;
 
-    String profilePic, userName, mail, password, userId, lastMessage, status;
-
-    // Add no-argument constructor for Firebase
     public Users() {
     }
 
-    public Users(String profilePic, String userName, String mail, String password, String userId, String lastMessage, String status) {
+    public Users(String profilePic, String userName, String mail, String password, String userId, String status) {
         this.profilePic = profilePic;
         this.userName = userName;
         this.mail = mail;
         this.password = password;
         this.userId = userId;
-        this.lastMessage = lastMessage;
         this.status = status;
     }
 
@@ -70,13 +67,5 @@ public class Users {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public String getLastMessage() {
-        return lastMessage;
-    }
-
-    public void setLastMessage(String lastMessage) {
-        this.lastMessage = lastMessage;
     }
 }

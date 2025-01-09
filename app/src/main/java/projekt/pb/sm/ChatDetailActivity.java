@@ -27,6 +27,8 @@ public class ChatDetailActivity extends AppCompatActivity {
     String receiverId;
     String userName;
     String profilePic;
+    String senderRoom;
+    String receiverRoom;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,13 +39,22 @@ public class ChatDetailActivity extends AppCompatActivity {
         database = FirebaseDatabase.getInstance("https://react-social-a8a4c-default-rtdb.europe-west1.firebasedatabase.app/");
         auth = FirebaseAuth.getInstance();
 
+        // Get data from intent
         senderId = auth.getUid();
         receiverId = getIntent().getStringExtra("userId");
         userName = getIntent().getStringExtra("userName");
         profilePic = getIntent().getStringExtra("profilePic");
 
+        // Set up chat rooms
+        senderRoom = senderId + receiverId;
+        receiverRoom = receiverId + senderId;
+
+        // Set up UI
         binding.userName.setText(userName);
-        Picasso.get().load(profilePic).placeholder(R.drawable.avatar).into(binding.profileImage);
+        Picasso.get()
+                .load(profilePic)
+                .placeholder(R.drawable.avatar)
+                .into(binding.profileImage);
 
         binding.backArrow.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -52,6 +63,7 @@ public class ChatDetailActivity extends AppCompatActivity {
             }
         });
 
+        // Set up RecyclerView
         final ArrayList<Message> messageList = new ArrayList<>();
         final ChatAdapter chatAdapter = new ChatAdapter(messageList, this, receiverId);
         binding.chatRecyclerView.setAdapter(chatAdapter);
@@ -59,40 +71,48 @@ public class ChatDetailActivity extends AppCompatActivity {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         binding.chatRecyclerView.setLayoutManager(layoutManager);
 
-        final String senderRoom = senderId + receiverId;
-        final String receiverRoom = receiverId + senderId;
-
-        // Load messages from Firebase
+        // Load messages
         database.getReference().child("chats")
                 .child(senderRoom)
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         messageList.clear();
-                        for (DataSnapshot snapshot1 : snapshot.getChildren()) {
-                            Message message = snapshot1.getValue(Message.class);
-                            message.setMessageId(snapshot1.getKey());
-                            messageList.add(message);
+                        for (DataSnapshot messageSnap : snapshot.getChildren()) {
+                            Message message = messageSnap.getValue(Message.class);
+                            if (message != null) {
+                                message.setMessageId(messageSnap.getKey());
+                                messageList.add(message);
+                            }
                         }
                         chatAdapter.notifyDataSetChanged();
+
+                        // Scroll to bottom when new message arrives
+                        if (messageList.size() > 0) {
+                            binding.chatRecyclerView.smoothScrollToPosition(messageList.size() - 1);
+                        }
                     }
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
+                        // Handle error
                     }
                 });
 
-        // Send message button click handler
+        // Send message
         binding.send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String messageText = binding.etMessage.getText().toString();
+                String messageText = binding.etMessage.getText().toString().trim();
+
                 if (!messageText.isEmpty()) {
                     String timestamp = String.valueOf(new Date().getTime());
                     final Message message = new Message(null, messageText, senderId, timestamp);
 
+                    // Clear input field
                     binding.etMessage.setText("");
 
+                    // Save message to sender's room
                     database.getReference().child("chats")
                             .child(senderRoom)
                             .push()
@@ -100,17 +120,11 @@ public class ChatDetailActivity extends AppCompatActivity {
                             .addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void unused) {
+                                    // Save message to receiver's room
                                     database.getReference().child("chats")
                                             .child(receiverRoom)
                                             .push()
-                                            .setValue(message)
-                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                @Override
-                                                public void onSuccess(Void unused) {
-                                                    // Update last message for both users
-                                                    updateLastMessage(messageText, senderId, receiverId);
-                                                }
-                                            });
+                                            .setValue(message);
                                 }
                             });
                 }
@@ -118,16 +132,31 @@ public class ChatDetailActivity extends AppCompatActivity {
         });
     }
 
-    private void updateLastMessage(String lastMsg, String senderId, String receiverId) {
-        database.getReference().child("Users").child(senderId).child("lastMessage")
-                .setValue(lastMsg);
-        database.getReference().child("Users").child(receiverId).child("lastMessage")
-                .setValue(lastMsg);
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Set user status to online
+        if (senderId != null) {
+            database.getReference().child("Users").child(senderId).child("status").setValue("online");
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Set user status to offline
+        if (senderId != null) {
+            database.getReference().child("Users").child(senderId).child("status").setValue("offline");
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        // Clean up
+        if (senderId != null) {
+            database.getReference().child("Users").child(senderId).child("status").setValue("offline");
+        }
         binding = null;
     }
 }

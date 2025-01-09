@@ -9,20 +9,30 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import projekt.pb.sm.ChatDetailActivity;
 import projekt.pb.sm.R;
+import projekt.pb.sm.models.Message;
 import projekt.pb.sm.models.Users;
 
 public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.ViewHolder> {
 
     ArrayList<Users> list;
     Context context;
+    FirebaseDatabase database;
+    String currentUserId;
 
     public UsersAdapter(ArrayList<Users> list, Context context) {
         this.list = list;
         this.context = context;
+        this.database = FirebaseDatabase.getInstance();
+        this.currentUserId = FirebaseAuth.getInstance().getUid();
     }
 
     @NonNull
@@ -41,7 +51,32 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.ViewHolder> 
                 .into(holder.image);
 
         holder.userName.setText(users.getUserName());
-        holder.lastMessage.setText(users.getLastMessage());
+
+        // Pobierz ostatnią wiadomość z chatu
+        String chatRoomId = currentUserId + users.getUserId();
+        database.getReference().child("chats")
+                .child(chatRoomId)
+                .limitToLast(1)
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()) {
+                            for (DataSnapshot messageSnap : snapshot.getChildren()) {
+                                Message message = messageSnap.getValue(Message.class);
+                                if (message != null) {
+                                    holder.lastMessage.setText(message.getMessage());
+                                }
+                            }
+                        } else {
+                            holder.lastMessage.setText("");
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        holder.lastMessage.setText("");
+                    }
+                });
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
