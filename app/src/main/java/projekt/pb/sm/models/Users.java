@@ -5,7 +5,10 @@ public class Users {
     private String userName;
     private String profilePic;
     private String lastMessage;
-    private String status; // Add this field
+    private String status;
+    private String lastMessageSenderId;
+    private boolean isLastMessageRead;
+    private String lastMessageTimestamp;
 
     public Users() {
     }
@@ -54,5 +57,29 @@ public class Users {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getLastMessageSenderId() {
+        return lastMessageSenderId;
+    }
+
+    public void setLastMessageSenderId(String lastMessageSenderId) {
+        this.lastMessageSenderId = lastMessageSenderId;
+    }
+
+    public boolean isLastMessageRead() {
+        return isLastMessageRead;
+    }
+
+    public void setLastMessageRead(boolean lastMessageRead) {
+        this.isLastMessageRead = lastMessageRead;
+    }
+
+    public String getLastMessageTimestamp() {
+        return lastMessageTimestamp;
+    }
+
+    public void setLastMessageTimestamp(String lastMessageTimestamp) {
+        this.lastMessageTimestamp = lastMessageTimestamp;
     }
 }

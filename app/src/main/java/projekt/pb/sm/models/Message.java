@@ -2,12 +2,14 @@ package projekt.pb.sm.models;
 
 public class Message {
     String messageId, message, senderId, timestamp;
+    boolean isRead;  // Dodane nowe pole
 
     public Message(String messageId, String message, String senderId, String timestamp) {
         this.messageId = messageId;
         this.message = message;
         this.senderId = senderId;
         this.timestamp = timestamp;
+        this.isRead = false;  // Domyślnie wiadomość jest nieodczytana
     }
 
     public Message() {} // Empty constructor for Firebase
@@ -42,5 +44,13 @@ public class Message {
 
     public void setTimestamp(String timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public boolean isRead() {
+        return isRead;
+    }
+
+    public void setRead(boolean read) {
+        isRead = read;
     }
 }
