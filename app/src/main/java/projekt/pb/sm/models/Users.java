@@ -1,32 +1,27 @@
 package projekt.pb.sm.models;
 
 public class Users {
-    String profilePic, userName, mail, password, userId, status;
+    private String userId;
+    private String userName;
+    private String profilePic;
+    private String lastMessage;
+    private String status; // Add this field
 
     public Users() {
     }
 
-    public Users(String profilePic, String userName, String mail, String password, String userId, String status) {
-        this.profilePic = profilePic;
-        this.userName = userName;
-        this.mail = mail;
-        this.password = password;
+    public Users(String userId, String userName, String profilePic) {
         this.userId = userId;
-        this.status = status;
-    }
-
-    public Users(String userName, String mail, String password) {
         this.userName = userName;
-        this.mail = mail;
-        this.password = password;
-    }
-
-    public String getProfilePic() {
-        return profilePic;
-    }
-
-    public void setProfilePic(String profilePic) {
         this.profilePic = profilePic;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getUserName() {
@@ -37,28 +32,20 @@ public class Users {
         this.userName = userName;
     }
 
-    public String getMail() {
-        return mail;
+    public String getProfilePic() {
+        return profilePic;
     }
 
-    public void setMail(String mail) {
-        this.mail = mail;
+    public void setProfilePic(String profilePic) {
+        this.profilePic = profilePic;
     }
 
-    public String getPassword() {
-        return password;
+    public String getLastMessage() {
+        return lastMessage;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setLastMessage(String lastMessage) {
+        this.lastMessage = lastMessage;
     }
 
     public String getStatus() {

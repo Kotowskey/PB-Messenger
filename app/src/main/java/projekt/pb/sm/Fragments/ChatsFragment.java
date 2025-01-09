@@ -23,6 +23,7 @@ public class ChatsFragment extends Fragment {
     private ArrayList<Users> list = new ArrayList<>();
     private FirebaseDatabase database;
     private FirebaseAuth auth;
+    private UsersAdapter adapter;
 
     public ChatsFragment() {
         // Required empty public constructor
@@ -36,7 +37,7 @@ public class ChatsFragment extends Fragment {
         database = FirebaseDatabase.getInstance("https://react-social-a8a4c-default-rtdb.europe-west1.firebasedatabase.app/");
         auth = FirebaseAuth.getInstance();
 
-        UsersAdapter adapter = new UsersAdapter(list, getContext());
+        adapter = new UsersAdapter(list, getContext());
         binding.chatRecyclerView.setAdapter(adapter);
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
@@ -51,6 +52,7 @@ public class ChatsFragment extends Fragment {
                     users.setUserId(dataSnapshot.getKey());
                     if (!users.getUserId().equals(auth.getUid())) {
                         list.add(users);
+                        fetchLastMessage(users);
                     }
                 }
                 adapter.notifyDataSetChanged();
@@ -62,6 +64,27 @@ public class ChatsFragment extends Fragment {
         });
 
         return binding.getRoot();
+    }
+
+    private void fetchLastMessage(Users user) {
+        String senderRoom = auth.getUid() + user.getUserId();
+        database.getReference().child("chats").child(senderRoom)
+                .orderByKey().limitToLast(1)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.hasChildren()) {
+                            for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                                user.setLastMessage(dataSnapshot.child("message").getValue(String.class));
+                                adapter.notifyDataSetChanged();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                    }
+                });
     }
 
     @Override
