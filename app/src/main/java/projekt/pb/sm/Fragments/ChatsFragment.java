@@ -136,29 +136,34 @@ public class ChatsFragment extends Fragment {
         Collections.sort(list, new Comparator<Users>() {
             @Override
             public int compare(Users user1, Users user2) {
-                // Najpierw sprawdzamy czy są nieodczytane wiadomości
-                if (!user1.isLastMessageRead() && user2.isLastMessageRead()) {
-                    return -1;
-                }
-                if (user1.isLastMessageRead() && !user2.isLastMessageRead()) {
-                    return 1;
-                }
-
-                // Następnie sortujemy po czasie ostatniej wiadomości
+                // Pobieramy timestampy
                 String timestamp1 = user1.getLastMessageTimestamp();
                 String timestamp2 = user2.getLastMessageTimestamp();
 
+                // Jeśli oba timestampy są null, sortujemy po nazwie użytkownika
                 if (timestamp1 == null && timestamp2 == null) {
                     return user1.getUserName().compareTo(user2.getUserName());
                 }
+
+                // Jeśli tylko jeden timestamp jest null
                 if (timestamp1 == null) return 1;
                 if (timestamp2 == null) return -1;
 
-                // Sortowanie malejąco (najnowsze pierwsze)
-                return timestamp2.compareTo(timestamp1);
+                // Konwertujemy timestampy na long dla poprawnego porównania
+                try {
+                    long time1 = Long.parseLong(timestamp1);
+                    long time2 = Long.parseLong(timestamp2);
+
+                    // Sortowanie malejąco (najnowsze pierwsze)
+                    return Long.compare(time2, time1);
+                } catch (NumberFormatException e) {
+                    // W przypadku błędu parsowania, sortujemy po stringu
+                    return timestamp2.compareTo(timestamp1);
+                }
             }
         });
     }
+
 
     @Override
     public void onResume() {
