@@ -14,6 +14,9 @@ import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
 import projekt.pb.sm.Adapter.ChatAdapter;
 import projekt.pb.sm.databinding.ActivityChatDetailBinding;
 import projekt.pb.sm.models.Message;
@@ -77,21 +80,33 @@ public class ChatDetailActivity extends AppCompatActivity {
 
             if (!messageText.isEmpty()) {
                 String timestamp = String.valueOf(new Date().getTime());
-                Message message = new Message(null, messageText, senderId, timestamp);
-                message.setRead(false);
+                Message message = new Message();
+                message.setMessage(messageText);
+                message.setSenderId(senderId);
+                message.setTimestamp(timestamp);
+                message.setRead(false); // Nowa wiadomość zawsze jest nieprzeczytana
 
                 binding.etMessage.setText("");
 
-                database.getReference().child("chats")
+                String messageId = database.getReference().child("chats")
                         .child(senderRoom)
-                        .push()
-                        .setValue(message)
-                        .addOnSuccessListener(unused -> {
-                            database.getReference().child("chats")
-                                    .child(receiverRoom)
-                                    .push()
-                                    .setValue(message);
-                        });
+                        .push().getKey();
+
+                if (messageId != null) {
+                    message.setMessageId(messageId);
+
+                    Map<String, Object> updates = new HashMap<>();
+                    updates.put("/chats/" + senderRoom + "/" + messageId, message);
+                    updates.put("/chats/" + receiverRoom + "/" + messageId, message);
+
+                    database.getReference().updateChildren(updates)
+                            .addOnSuccessListener(unused -> {
+                                // Wiadomość wysłana pomyślnie
+                            })
+                            .addOnFailureListener(e -> {
+                                // Obsługa błędu
+                            });
+                }
             }
         });
     }
@@ -139,14 +154,14 @@ public class ChatDetailActivity extends AppCompatActivity {
                         for (DataSnapshot messageSnap : snapshot.getChildren()) {
                             Message message = messageSnap.getValue(Message.class);
                             if (message != null && !message.isRead() && !message.getSenderId().equals(senderId)) {
-                                // Update in sender's room
+                                // Aktualizacja w sender room
                                 database.getReference().child("chats")
                                         .child(senderRoom)
                                         .child(messageSnap.getKey())
                                         .child("read")
                                         .setValue(true);
 
-                                // Update in receiver's room
+                                // Aktualizacja w receiver room
                                 database.getReference().child("chats")
                                         .child(receiverRoom)
                                         .child(messageSnap.getKey())

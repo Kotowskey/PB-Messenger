@@ -12,7 +12,9 @@ public class Message {
         this.isRead = false;  // Domyślnie wiadomość jest nieodczytana
     }
 
-    public Message() {} // Empty constructor for Firebase
+    public Message() {
+        this.isRead = false;
+    } // Empty constructor for Firebase
 
     public String getMessageId() {
         return messageId;
