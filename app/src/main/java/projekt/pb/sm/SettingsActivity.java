@@ -10,11 +10,13 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
+import com.squareup.picasso.Picasso;
 import projekt.pb.sm.databinding.ActivitySettingsBinding;
 
 public class SettingsActivity extends AppCompatActivity {
@@ -35,8 +37,92 @@ public class SettingsActivity extends AppCompatActivity {
         // Set up toolbar
         binding.toolbar.setNavigationOnClickListener(v -> finish());
 
+        // Load current profile image
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            database.getReference().child("Users").child(currentUser.getUid()).get()
+                    .addOnSuccessListener(dataSnapshot -> {
+                        if (dataSnapshot.exists()) {
+                            String profilePicUrl = dataSnapshot.child("profilePic").getValue(String.class);
+                            if (profilePicUrl != null && !profilePicUrl.isEmpty()) {
+                                binding.profileImageUrl.setText(profilePicUrl);
+                                Picasso.get()
+                                        .load(profilePicUrl)
+                                        .placeholder(R.drawable.avatar)
+                                        .into(binding.profileImage);
+                            }
+                        }
+                    });
+        }
+
+        // Update avatar button click handler
+        binding.btnUpdateAvatar.setOnClickListener(v -> updateProfilePicture());
+
         // Delete account button click handler
         binding.btnDeleteAccount.setOnClickListener(v -> showDeleteAccountDialog());
+    }
+
+    private void updateProfilePicture() {
+        String imageUrl = binding.profileImageUrl.getText().toString().trim();
+        if (imageUrl.isEmpty()) {
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle("Błąd")
+                    .setMessage("Proszę podać URL zdjęcia")
+                    .setPositiveButton("OK", null)
+                    .show();
+            return;
+        }
+
+        // Show loading dialog
+        MaterialAlertDialogBuilder loadingDialog = new MaterialAlertDialogBuilder(this)
+                .setTitle("Aktualizacja")
+                .setMessage("Trwa aktualizacja zdjęcia profilowego...")
+                .setCancelable(false);
+        AlertDialog dialog = loadingDialog.show();
+
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            // First try to load the image to verify URL
+            Picasso.get()
+                    .load(imageUrl)
+                    .into(binding.profileImage, new com.squareup.picasso.Callback() {
+                        @Override
+                        public void onSuccess() {
+                            // Image loaded successfully, now update in database
+                            database.getReference()
+                                    .child("Users")
+                                    .child(currentUser.getUid())
+                                    .child("profilePic")
+                                    .setValue(imageUrl)
+                                    .addOnSuccessListener(unused -> {
+                                        dialog.dismiss();
+                                        new MaterialAlertDialogBuilder(SettingsActivity.this)
+                                                .setTitle("Sukces")
+                                                .setMessage("Zdjęcie profilowe zostało pomyślnie zaktualizowane")
+                                                .setPositiveButton("OK", null)
+                                                .show();
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        dialog.dismiss();
+                                        new MaterialAlertDialogBuilder(SettingsActivity.this)
+                                                .setTitle("Błąd")
+                                                .setMessage("Nie udało się zaktualizować zdjęcia: " + e.getMessage())
+                                                .setPositiveButton("OK", null)
+                                                .show();
+                                    });
+                        }
+
+                        @Override
+                        public void onError(Exception e) {
+                            dialog.dismiss();
+                            new MaterialAlertDialogBuilder(SettingsActivity.this)
+                                    .setTitle("Błąd")
+                                    .setMessage("Nieprawidłowy URL obrazu lub problem z jego pobraniem")
+                                    .setPositiveButton("OK", null)
+                                    .show();
+                        }
+                    });
+        }
     }
 
     private void showDeleteAccountDialog() {
