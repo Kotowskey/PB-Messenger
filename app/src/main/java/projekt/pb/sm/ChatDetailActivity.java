@@ -12,9 +12,12 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import projekt.pb.sm.Adapter.ChatAdapter;
@@ -56,7 +59,6 @@ public class ChatDetailActivity extends AppCompatActivity {
             return;
         }
 
-        // Anuluj powiadomienia dla tego chatu
         NotificationManagerCompat.from(this).cancel(receiverId.hashCode());
 
         userName = getIntent().getStringExtra("userName");
@@ -73,19 +75,16 @@ public class ChatDetailActivity extends AppCompatActivity {
 
         binding.backArrow.setOnClickListener(v -> finish());
 
-        // Setup RecyclerView
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         binding.chatRecyclerView.setLayoutManager(layoutManager);
 
         chatAdapter = new ChatAdapter(messageList, this, receiverId);
         binding.chatRecyclerView.setAdapter(chatAdapter);
 
-        // Setup listeners and message handling
         setupStatusListener();
         markMessagesAsRead();
         setupChatListener();
 
-        // Handle send button click
         binding.send.setOnClickListener(v -> sendMessage());
     }
 
@@ -152,6 +151,42 @@ public class ChatDetailActivity extends AppCompatActivity {
                 });
     }
 
+    private String formatLastSeen(long timestamp) {
+        long now = System.currentTimeMillis();
+        long diff = now - timestamp;
+
+        Calendar lastSeenCal = Calendar.getInstance();
+        lastSeenCal.setTimeInMillis(timestamp);
+
+        Calendar nowCal = Calendar.getInstance();
+        nowCal.setTimeInMillis(now);
+
+        if (diff < 60 * 1000) { // mniej niż minuta
+            return "przed chwilą";
+        } else if (diff < 60 * 60 * 1000) { // mniej niż godzina
+            long minutes = diff / (60 * 1000);
+            return minutes + " min temu";
+        } else if (diff < 24 * 60 * 60 * 1000 &&
+                lastSeenCal.get(Calendar.DAY_OF_YEAR) == nowCal.get(Calendar.DAY_OF_YEAR)) {
+            // Dzisiaj
+            return "dzisiaj " + new SimpleDateFormat("HH:mm", Locale.getDefault())
+                    .format(new Date(timestamp));
+        } else if (diff < 48 * 60 * 60 * 1000 &&
+                lastSeenCal.get(Calendar.DAY_OF_YEAR) == nowCal.get(Calendar.DAY_OF_YEAR) - 1) {
+            // Wczoraj
+            return "wczoraj " + new SimpleDateFormat("HH:mm", Locale.getDefault())
+                    .format(new Date(timestamp));
+        } else if (diff < 7 * 24 * 60 * 60 * 1000) {
+            // W tym tygodniu
+            return new SimpleDateFormat("EEEE HH:mm", new Locale("pl"))
+                    .format(new Date(timestamp));
+        } else {
+            // Starsze
+            return new SimpleDateFormat("dd.MM.yy HH:mm", Locale.getDefault())
+                    .format(new Date(timestamp));
+        }
+    }
+
     private void setupChatListener() {
         chatListener = new ValueEventListener() {
             @Override
@@ -215,18 +250,6 @@ public class ChatDetailActivity extends AppCompatActivity {
             updates.put("/chats/" + receiverRoom + "/" + messageId, message);
 
             database.getReference().updateChildren(updates);
-        }
-    }
-    private String formatLastSeen(long timestamp) {
-        long now = System.currentTimeMillis();
-        long diff = now - timestamp;
-
-        if (diff < 24 * 60 * 60 * 1000) {
-            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault());
-            return sdf.format(new Date(timestamp));
-        } else {
-            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.getDefault());
-            return sdf.format(new Date(timestamp));
         }
     }
 

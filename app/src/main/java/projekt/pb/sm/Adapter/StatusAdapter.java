@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.squareup.picasso.Picasso;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -43,14 +44,12 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
 
         holder.userName.setText(users.getUserName());
 
-        // Logika statusu online/offline
         if ("online".equals(users.getStatus())) {
             holder.statusIndicator.setVisibility(View.VISIBLE);
             holder.userStatus.setText("online");
         } else {
             holder.statusIndicator.setVisibility(View.GONE);
 
-            // Wyświetlanie czasu ostatniej aktywności
             if (users.getLastSeen() != null) {
                 try {
                     long lastSeenTime = Long.parseLong(users.getLastSeen());
@@ -69,12 +68,34 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
         long now = System.currentTimeMillis();
         long diff = now - timestamp;
 
-        // Jeśli mniej niż 24 godziny temu
-        if (diff < 24 * 60 * 60 * 1000) {
-            return new SimpleDateFormat("HH:mm", Locale.getDefault())
+        Calendar lastSeenCal = Calendar.getInstance();
+        lastSeenCal.setTimeInMillis(timestamp);
+
+        Calendar nowCal = Calendar.getInstance();
+        nowCal.setTimeInMillis(now);
+
+        if (diff < 60 * 1000) { // mniej niż minuta
+            return "przed chwilą";
+        } else if (diff < 60 * 60 * 1000) { // mniej niż godzina
+            long minutes = diff / (60 * 1000);
+            return minutes + " min temu";
+        } else if (diff < 24 * 60 * 60 * 1000 &&
+                lastSeenCal.get(Calendar.DAY_OF_YEAR) == nowCal.get(Calendar.DAY_OF_YEAR)) {
+            // Dzisiaj
+            return "dzisiaj " + new SimpleDateFormat("HH:mm", Locale.getDefault())
+                    .format(new Date(timestamp));
+        } else if (diff < 48 * 60 * 60 * 1000 &&
+                lastSeenCal.get(Calendar.DAY_OF_YEAR) == nowCal.get(Calendar.DAY_OF_YEAR) - 1) {
+            // Wczoraj
+            return "wczoraj " + new SimpleDateFormat("HH:mm", Locale.getDefault())
+                    .format(new Date(timestamp));
+        } else if (diff < 7 * 24 * 60 * 60 * 1000) {
+            // W tym tygodniu
+            return new SimpleDateFormat("EEEE HH:mm", new Locale("pl"))
                     .format(new Date(timestamp));
         } else {
-            return new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
+            // Starsze
+            return new SimpleDateFormat("dd.MM.yy HH:mm", Locale.getDefault())
                     .format(new Date(timestamp));
         }
     }

@@ -10,7 +10,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.auth.FirebaseAuth;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import projekt.pb.sm.R;
 import projekt.pb.sm.models.Message;
 
@@ -59,37 +61,49 @@ public class ChatAdapter extends RecyclerView.Adapter {
         if (holder instanceof SenderViewHolder) {
             SenderViewHolder viewHolder = (SenderViewHolder) holder;
             viewHolder.senderMsg.setText(message.getMessage());
-
-            String timestamp = message.getTimestamp();
-            if (timestamp != null) {
-                try {
-                    long timeInMillis = Long.parseLong(timestamp);
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
-                    String formattedTime = dateFormat.format(new Date(timeInMillis));
-                    viewHolder.senderTime.setText(formattedTime);
-                } catch (Exception e) {
-                    viewHolder.senderTime.setText("--:--");
-                }
-            } else {
-                viewHolder.senderTime.setText("--:--");
-            }
+            viewHolder.senderTime.setText(formatMessageTime(message.getTimestamp()));
         } else if (holder instanceof ReceiverViewHolder) {
             ReceiverViewHolder viewHolder = (ReceiverViewHolder) holder;
             viewHolder.receiverMsg.setText(message.getMessage());
+            viewHolder.receiverTime.setText(formatMessageTime(message.getTimestamp()));
+        }
+    }
 
-            String timestamp = message.getTimestamp();
-            if (timestamp != null) {
-                try {
-                    long timeInMillis = Long.parseLong(timestamp);
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
-                    String formattedTime = dateFormat.format(new Date(timeInMillis));
-                    viewHolder.receiverTime.setText(formattedTime);
-                } catch (Exception e) {
-                    viewHolder.receiverTime.setText("--:--");
-                }
+    private String formatMessageTime(String timestamp) {
+        if (timestamp == null) return "--:--";
+
+        try {
+            long timeInMillis = Long.parseLong(timestamp);
+            long now = System.currentTimeMillis();
+            long diff = now - timeInMillis;
+
+            Calendar messageCal = Calendar.getInstance();
+            messageCal.setTimeInMillis(timeInMillis);
+
+            Calendar nowCal = Calendar.getInstance();
+            nowCal.setTimeInMillis(now);
+
+            if (diff < 24 * 60 * 60 * 1000 &&
+                    messageCal.get(Calendar.DAY_OF_YEAR) == nowCal.get(Calendar.DAY_OF_YEAR)) {
+                // Dzisiaj
+                return new SimpleDateFormat("HH:mm", Locale.getDefault())
+                        .format(new Date(timeInMillis));
+            } else if (diff < 48 * 60 * 60 * 1000 &&
+                    messageCal.get(Calendar.DAY_OF_YEAR) == nowCal.get(Calendar.DAY_OF_YEAR) - 1) {
+                // Wczoraj
+                return "wczoraj " + new SimpleDateFormat("HH:mm", Locale.getDefault())
+                        .format(new Date(timeInMillis));
+            } else if (diff < 7 * 24 * 60 * 60 * 1000) {
+                // W tym tygodniu
+                return new SimpleDateFormat("EEEE HH:mm", new Locale("pl"))
+                        .format(new Date(timeInMillis));
             } else {
-                viewHolder.receiverTime.setText("--:--");
+                // Starsze wiadomości
+                return new SimpleDateFormat("dd.MM.yy HH:mm", Locale.getDefault())
+                        .format(new Date(timeInMillis));
             }
+        } catch (Exception e) {
+            return "--:--";
         }
     }
 
