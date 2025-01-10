@@ -14,6 +14,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.squareup.picasso.Picasso;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -53,13 +54,26 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.ViewHolder> 
             holder.statusIndicator.setVisibility(View.GONE);
         }
 
-        // Wyświetlanie ostatniej wiadomości i statusu
+        // Wyświetlanie ostatniej wiadomości, statusu i czasu
         if (user.getLastMessage() != null) {
             String lastMessageText = user.getLastMessage();
             if (user.getLastMessageSenderId() != null && user.getLastMessageSenderId().equals(currentUserId)) {
                 lastMessageText = "Ty: " + lastMessageText;
             }
-            holder.lastMessage.setText(lastMessageText);
+
+            // Formatowanie czasu ostatniej wiadomości
+            String timeStr = "";
+            if (user.getLastMessageTimestamp() != null) {
+                timeStr = formatMessageTime(user.getLastMessageTimestamp());
+            }
+
+            // Łączenie tekstu wiadomości i czasu
+            String displayText = lastMessageText;
+            if (!timeStr.isEmpty()) {
+                displayText = displayText + "  ·  " + timeStr;
+            }
+
+            holder.lastMessage.setText(displayText);
 
             if (!user.isLastMessageRead() && !user.getLastMessageSenderId().equals(currentUserId)) {
                 holder.lastMessage.setTypeface(holder.lastMessage.getTypeface(), Typeface.BOLD);
@@ -79,6 +93,45 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.ViewHolder> 
             intent.putExtra("profilePic", user.getProfilePic());
             context.startActivity(intent);
         });
+    }
+
+    private String formatMessageTime(String timestamp) {
+        if (timestamp == null) return "";
+
+        try {
+            long timeInMillis = Long.parseLong(timestamp);
+            long now = System.currentTimeMillis();
+            long diff = now - timeInMillis;
+
+            Calendar messageCal = Calendar.getInstance();
+            messageCal.setTimeInMillis(timeInMillis);
+
+            Calendar nowCal = Calendar.getInstance();
+            nowCal.setTimeInMillis(now);
+
+            if (diff < 24 * 60 * 60 * 1000 &&
+                    messageCal.get(Calendar.DAY_OF_YEAR) == nowCal.get(Calendar.DAY_OF_YEAR)) {
+                // Dzisiaj
+                return new SimpleDateFormat("HH:mm", Locale.getDefault())
+                        .format(new Date(timeInMillis));
+            } else if (diff < 48 * 60 * 60 * 1000 &&
+                    messageCal.get(Calendar.DAY_OF_YEAR) == nowCal.get(Calendar.DAY_OF_YEAR) - 1) {
+                // Wczoraj
+                return "wczoraj";
+            } else if (diff < 7 * 24 * 60 * 60 * 1000) {
+                // W tym tygodniu
+                return new SimpleDateFormat("EEEE", new Locale("pl"))
+                        .format(new Date(timeInMillis))
+                        .toLowerCase();
+            } else {
+                // Starsze wiadomości
+                return new SimpleDateFormat("d MMM", new Locale("pl"))
+                        .format(new Date(timeInMillis))
+                        .toLowerCase();
+            }
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     @Override
