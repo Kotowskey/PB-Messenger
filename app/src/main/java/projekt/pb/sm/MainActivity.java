@@ -88,7 +88,6 @@ public class MainActivity extends AppCompatActivity {
 
                                         // Nie pokazuj powiadomienia, jeśli użytkownik jest w ChatDetailActivity
                                         if (!isInChatDetail) {
-                                            // Pokaż powiadomienie
                                             final Message finalLastMessage = lastMessage;
                                             database.getReference()
                                                     .child("Users")
@@ -116,42 +115,6 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {}
                 });
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        String currentId = FirebaseAuth.getInstance().getUid();
-        if (currentId != null) {
-            HashMap<String, Object> updates = new HashMap<>();
-            updates.put("status", "online");
-            updates.put("lastSeen", String.valueOf(System.currentTimeMillis()));
-            database.getReference().child("Users").child(currentId).updateChildren(updates);
-        }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        String currentId = FirebaseAuth.getInstance().getUid();
-        if (currentId != null) {
-            HashMap<String, Object> updates = new HashMap<>();
-            updates.put("status", "offline");
-            updates.put("lastSeen", String.valueOf(System.currentTimeMillis()));
-            database.getReference().child("Users").child(currentId).updateChildren(updates);
-        }
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        String currentId = FirebaseAuth.getInstance().getUid();
-        if (currentId != null) {
-            HashMap<String, Object> updates = new HashMap<>();
-            updates.put("status", "offline");
-            updates.put("lastSeen", String.valueOf(System.currentTimeMillis()));
-            database.getReference().child("Users").child(currentId).updateChildren(updates);
-        }
     }
 
     @Override
@@ -194,17 +157,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        UserStatusManager.getInstance().onActivityResumed();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        UserStatusManager.getInstance().onActivityPaused();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
+        UserStatusManager.getInstance().onActivityPaused();
         if (messageListener != null) {
             database.getReference().child("chats").removeEventListener(messageListener);
-        }
-        String currentId = FirebaseAuth.getInstance().getUid();
-        if (currentId != null) {
-            HashMap<String, Object> updates = new HashMap<>();
-            updates.put("status", "offline");
-            updates.put("lastSeen", String.valueOf(System.currentTimeMillis()));
-            database.getReference().child("Users").child(currentId).updateChildren(updates);
         }
         binding = null;
     }

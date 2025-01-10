@@ -208,6 +208,7 @@ public class ChatDetailActivity extends AppCompatActivity {
                     int lastPosition = messageList.size() - 1;
                     if (isFirstLoad) {
                         binding.chatRecyclerView.scrollToPosition(lastPosition);
+                        binding.chatRecyclerView.scrollToPosition(lastPosition);
                         isFirstLoad = false;
                     } else {
                         binding.chatRecyclerView.smoothScrollToPosition(lastPosition);
@@ -286,34 +287,19 @@ public class ChatDetailActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (senderId != null) {
-            HashMap<String, Object> updates = new HashMap<>();
-            updates.put("status", "online");
-            updates.put("lastSeen", String.valueOf(System.currentTimeMillis()));
-            database.getReference().child("Users").child(senderId).updateChildren(updates);
-        }
+        UserStatusManager.getInstance().onActivityResumed();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (senderId != null) {
-            HashMap<String, Object> updates = new HashMap<>();
-            updates.put("status", "offline");
-            updates.put("lastSeen", String.valueOf(System.currentTimeMillis()));
-            database.getReference().child("Users").child(senderId).updateChildren(updates);
-        }
+        UserStatusManager.getInstance().onActivityPaused();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (senderId != null) {
-            HashMap<String, Object> updates = new HashMap<>();
-            updates.put("status", "offline");
-            updates.put("lastSeen", String.valueOf(System.currentTimeMillis()));
-            database.getReference().child("Users").child(senderId).updateChildren(updates);
-        }
+        UserStatusManager.getInstance().onActivityPaused();
 
         if (chatListener != null) {
             database.getReference().child("chats")
