@@ -4,8 +4,8 @@ import android.os.Bundle;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -20,6 +20,7 @@ import java.util.Map;
 import projekt.pb.sm.Adapter.ChatAdapter;
 import projekt.pb.sm.databinding.ActivityChatDetailBinding;
 import projekt.pb.sm.models.Message;
+import projekt.pb.sm.models.Users;
 
 public class ChatDetailActivity extends AppCompatActivity {
 
@@ -36,11 +37,11 @@ public class ChatDetailActivity extends AppCompatActivity {
     private ValueEventListener statusListener;
     private final ArrayList<Message> messageList = new ArrayList<>();
     private ChatAdapter chatAdapter;
+    private boolean isFirstLoad = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         binding = ActivityChatDetailBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -49,64 +50,70 @@ public class ChatDetailActivity extends AppCompatActivity {
 
         senderId = auth.getUid();
         receiverId = getIntent().getStringExtra("userId");
+
+        if (receiverId == null) {
+            finish();
+            return;
+        }
+
+        // Anuluj powiadomienia dla tego chatu
+        NotificationManagerCompat.from(this).cancel(receiverId.hashCode());
+
         userName = getIntent().getStringExtra("userName");
         profilePic = getIntent().getStringExtra("profilePic");
 
         senderRoom = senderId + receiverId;
         receiverRoom = receiverId + senderId;
 
+        if (userName == null || profilePic == null) {
+            loadUserData();
+        } else {
+            updateUserInterface();
+        }
+
+        binding.backArrow.setOnClickListener(v -> finish());
+
+        // Setup RecyclerView
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        binding.chatRecyclerView.setLayoutManager(layoutManager);
+
+        chatAdapter = new ChatAdapter(messageList, this, receiverId);
+        binding.chatRecyclerView.setAdapter(chatAdapter);
+
+        // Setup listeners and message handling
+        setupStatusListener();
+        markMessagesAsRead();
+        setupChatListener();
+
+        // Handle send button click
+        binding.send.setOnClickListener(v -> sendMessage());
+    }
+
+    private void loadUserData() {
+        database.getReference().child("Users").child(receiverId)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        Users user = snapshot.getValue(Users.class);
+                        if (user != null) {
+                            userName = user.getUserName();
+                            profilePic = user.getProfilePic();
+                            updateUserInterface();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                    }
+                });
+    }
+
+    private void updateUserInterface() {
         binding.userName.setText(userName);
         Picasso.get()
                 .load(profilePic)
                 .placeholder(R.drawable.avatar)
                 .into(binding.profileImage);
-
-        binding.backArrow.setOnClickListener(v -> finish());
-
-        chatAdapter = new ChatAdapter(messageList, this, receiverId);
-        binding.chatRecyclerView.setAdapter(chatAdapter);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        binding.chatRecyclerView.setLayoutManager(layoutManager);
-
-        // Nasłuchiwanie statusu odbiorcy
-        setupStatusListener();
-
-        // Mark messages as read when entering chat
-        markMessagesAsRead();
-
-        // Set up chat listener
-        setupChatListener();
-
-        binding.send.setOnClickListener(v -> {
-            if (binding == null) return;
-
-            String messageText = binding.etMessage.getText().toString().trim();
-
-            if (!messageText.isEmpty()) {
-                String timestamp = String.valueOf(new Date().getTime());
-                Message message = new Message();
-                message.setMessage(messageText);
-                message.setSenderId(senderId);
-                message.setTimestamp(timestamp);
-                message.setRead(false);
-
-                binding.etMessage.setText("");
-
-                String messageId = database.getReference().child("chats")
-                        .child(senderRoom)
-                        .push().getKey();
-
-                if (messageId != null) {
-                    message.setMessageId(messageId);
-
-                    Map<String, Object> updates = new HashMap<>();
-                    updates.put("/chats/" + senderRoom + "/" + messageId, message);
-                    updates.put("/chats/" + receiverRoom + "/" + messageId, message);
-
-                    database.getReference().updateChildren(updates);
-                }
-            }
-        });
     }
 
     private void setupStatusListener() {
@@ -145,19 +152,6 @@ public class ChatDetailActivity extends AppCompatActivity {
                 });
     }
 
-    private String formatLastSeen(long timestamp) {
-        long now = System.currentTimeMillis();
-        long diff = now - timestamp;
-
-        if (diff < 24 * 60 * 60 * 1000) {
-            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault());
-            return sdf.format(new Date(timestamp));
-        } else {
-            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.getDefault());
-            return sdf.format(new Date(timestamp));
-        }
-    }
-
     private void setupChatListener() {
         chatListener = new ValueEventListener() {
             @Override
@@ -172,12 +166,17 @@ public class ChatDetailActivity extends AppCompatActivity {
                         messageList.add(message);
                     }
                 }
-                if (chatAdapter != null) {
-                    chatAdapter.notifyDataSetChanged();
-                }
 
-                if (messageList.size() > 0 && binding != null && binding.chatRecyclerView != null) {
-                    binding.chatRecyclerView.smoothScrollToPosition(messageList.size() - 1);
+                chatAdapter.notifyDataSetChanged();
+
+                if (messageList.size() > 0) {
+                    int lastPosition = messageList.size() - 1;
+                    if (isFirstLoad) {
+                        binding.chatRecyclerView.scrollToPosition(lastPosition);
+                        isFirstLoad = false;
+                    } else {
+                        binding.chatRecyclerView.smoothScrollToPosition(lastPosition);
+                    }
                 }
             }
 
@@ -189,6 +188,46 @@ public class ChatDetailActivity extends AppCompatActivity {
         database.getReference().child("chats")
                 .child(senderRoom)
                 .addValueEventListener(chatListener);
+    }
+
+    private void sendMessage() {
+        String messageText = binding.etMessage.getText().toString().trim();
+        if (messageText.isEmpty()) return;
+
+        String timestamp = String.valueOf(new Date().getTime());
+        Message message = new Message();
+        message.setMessage(messageText);
+        message.setSenderId(senderId);
+        message.setTimestamp(timestamp);
+        message.setRead(false);
+
+        binding.etMessage.setText("");
+
+        String messageId = database.getReference().child("chats")
+                .child(senderRoom)
+                .push().getKey();
+
+        if (messageId != null) {
+            message.setMessageId(messageId);
+
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("/chats/" + senderRoom + "/" + messageId, message);
+            updates.put("/chats/" + receiverRoom + "/" + messageId, message);
+
+            database.getReference().updateChildren(updates);
+        }
+    }
+    private String formatLastSeen(long timestamp) {
+        long now = System.currentTimeMillis();
+        long diff = now - timestamp;
+
+        if (diff < 24 * 60 * 60 * 1000) {
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault());
+            return sdf.format(new Date(timestamp));
+        } else {
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.getDefault());
+            return sdf.format(new Date(timestamp));
+        }
     }
 
     private void markMessagesAsRead() {

@@ -1,11 +1,16 @@
 package projekt.pb.sm;
 
+import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationManagerCompat;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -13,6 +18,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import java.util.HashMap;
+import java.util.List;
 import projekt.pb.sm.Adapter.FragmentsAdapter;
 import projekt.pb.sm.databinding.ActivityMainBinding;
 import projekt.pb.sm.models.Message;
@@ -56,36 +62,53 @@ public class MainActivity extends AppCompatActivity {
                         for (DataSnapshot chatSnapshot : snapshot.getChildren()) {
                             String chatId = chatSnapshot.getKey();
                             if (chatId != null && chatId.contains(currentUserId)) {
-                                // Get the other user's ID from the chat ID
-                                final String otherUserId = chatId.replace(currentUserId, "")
-                                        .replace(currentUserId, "");
+                                // Pobierz tylko ostatnią wiadomość
+                                DataSnapshot lastMessageSnap = null;
+                                for (DataSnapshot messageSnapshot : chatSnapshot.getChildren()) {
+                                    lastMessageSnap = messageSnapshot;
+                                }
 
-                                // Listen for the last message
-                                chatSnapshot.getChildren().forEach(messageSnapshot -> {
-                                    Message message = messageSnapshot.getValue(Message.class);
-                                    if (message != null &&
-                                            !message.getSenderId().equals(currentUserId) &&
-                                            !message.isRead()) {
+                                if (lastMessageSnap != null) {
+                                    Message lastMessage = lastMessageSnap.getValue(Message.class);
+                                    if (lastMessage != null &&
+                                            !lastMessage.getSenderId().equals(currentUserId) &&
+                                            !lastMessage.isRead()) {
 
-                                        // Get sender's name and show notification
-                                        database.getReference()
-                                                .child("Users")
-                                                .child(message.getSenderId())
-                                                .child("userName")
-                                                .get()
-                                                .addOnSuccessListener(senderSnapshot -> {
-                                                    String senderName = senderSnapshot.getValue(String.class);
-                                                    if (senderName != null) {
-                                                        NotificationHelper.showMessageNotification(
-                                                                MainActivity.this,
-                                                                senderName,
-                                                                message.getMessage(),
-                                                                message.getSenderId()
-                                                        );
-                                                    }
-                                                });
+                                        // Sprawdź czy użytkownik nie jest aktualnie w chacie z tą osobą
+                                        String otherUserId = lastMessage.getSenderId();
+                                        ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                                        List<ActivityManager.RunningTaskInfo> tasks = activityManager.getRunningTasks(1);
+
+                                        boolean isInChatDetail = false;
+                                        if (!tasks.isEmpty()) {
+                                            ComponentName topActivity = tasks.get(0).topActivity;
+                                            isInChatDetail = topActivity != null &&
+                                                    topActivity.getClassName().equals(ChatDetailActivity.class.getName());
+                                        }
+
+                                        // Nie pokazuj powiadomienia, jeśli użytkownik jest w ChatDetailActivity
+                                        if (!isInChatDetail) {
+                                            // Pokaż powiadomienie
+                                            final Message finalLastMessage = lastMessage;
+                                            database.getReference()
+                                                    .child("Users")
+                                                    .child(lastMessage.getSenderId())
+                                                    .child("userName")
+                                                    .get()
+                                                    .addOnSuccessListener(senderSnapshot -> {
+                                                        String senderName = senderSnapshot.getValue(String.class);
+                                                        if (senderName != null) {
+                                                            NotificationHelper.showMessageNotification(
+                                                                    MainActivity.this,
+                                                                    senderName,
+                                                                    finalLastMessage.getMessage(),
+                                                                    finalLastMessage.getSenderId()
+                                                            );
+                                                        }
+                                                    });
+                                        }
                                     }
-                                });
+                                }
                             }
                         }
                     }
