@@ -1,5 +1,154 @@
 # Dokumentacja
 
+## Diagram Klas
+```mermaid
+classDiagram
+    class Users {
+        -String userId
+        -String userName
+        -String mail
+        -String password
+        -String profilePic
+        -String lastMessage
+        -String status
+        -String lastMessageSenderId
+        -boolean isLastMessageRead
+        -String lastMessageTimestamp
+        -String lastSeen
+        +Users()
+        +Users(userName, mail, password)
+        +getters()
+        +setters()
+    }
+
+    class Message {
+        -String messageId
+        -String message
+        -String senderId
+        -String timestamp
+        -boolean isRead
+        +Message()
+        +Message(messageId, message, senderId, timestamp)
+        +getters()
+        +setters()
+    }
+
+    class ChatApplication {
+        +void onCreate()
+        +void onTerminate()
+    }
+
+    class UserStatusManager {
+        -static UserStatusManager instance
+        -FirebaseDatabase database
+        -String userId
+        -int activeActivities
+        -UserStatusManager()
+        +static getInstance()
+        +void onActivityResumed()
+        +void onActivityPaused()
+        -void setUserStatus(String)
+    }
+
+    class NotificationHelper {
+        +static void createNotificationChannel()
+        +static void showMessageNotification()
+        +static boolean areNotificationsEnabled()
+        +static void setNotificationsEnabled()
+    }
+
+    class MainActivity {
+        -ActivityMainBinding binding
+        -FirebaseAuth mAuth
+        -FirebaseDatabase database
+        -ValueEventListener messageListener
+        +void onCreate()
+        -void setupMessageListener()
+        +void onResume()
+        +void onPause()
+    }
+
+    class ChatDetailActivity {
+        -ActivityChatDetailBinding binding
+        -FirebaseDatabase database
+        -FirebaseAuth auth
+        -String senderId
+        -String receiverId
+        -ArrayList~Message~ messageList
+        +void onCreate()
+        -void loadUserData()
+        -void setupStatusListener()
+        -void sendMessage()
+        -void markMessagesAsRead()
+    }
+
+    class SettingsActivity {
+        -ActivitySettingsBinding binding
+        -FirebaseAuth mAuth
+        -FirebaseDatabase database
+        +void onCreate()
+        -void updateProfilePicture()
+        -void showDeleteAccountDialog()
+        -void deleteUserData()
+    }
+
+    class ChatAdapter {
+        -ArrayList~Message~ messageModel
+        -Context context
+        -String currentUserId
+        +void onBindViewHolder()
+        -String formatMessageTime()
+        +int getItemCount()
+    }
+
+    class UsersAdapter {
+        -ArrayList~Users~ list
+        -Context context
+        -String currentUserId
+        +void onBindViewHolder()
+        -String formatMessageTime()
+        +int getItemCount()
+    }
+
+    class StatusAdapter {
+        -ArrayList~Users~ list
+        -Context context
+        +void onBindViewHolder()
+        -String formatLastSeen()
+        +int getItemCount()
+    }
+
+    class ChatsFragment {
+        -FragmentChatsBinding binding
+        -ArrayList~Users~ list
+        -FirebaseDatabase database
+        -FirebaseAuth auth
+        +View onCreateView()
+        -void loadUsers()
+        -void fetchLastMessage()
+    }
+
+    class StatusFragment {
+        -FragmentStatusBinding binding
+        -ArrayList~Users~ list
+        -FirebaseDatabase database
+        -FirebaseAuth auth
+        +View onCreateView()
+    }
+
+    ChatApplication --> UserStatusManager
+    MainActivity --> ChatsFragment
+    MainActivity --> StatusFragment
+    MainActivity --> NotificationHelper
+    ChatDetailActivity --> ChatAdapter
+    ChatDetailActivity --> UserStatusManager
+    ChatsFragment --> UsersAdapter
+    StatusFragment --> StatusAdapter
+    ChatAdapter --> Message
+    UsersAdapter --> Users
+    StatusAdapter --> Users
+```
+
 ## Przegląd
 Politechnika Chat to aplikacja do komunikacji w czasie rzeczywistym zbudowana na platformę Android z wykorzystaniem Firebase jako backendu. Aplikacja oferuje funkcje takie jak komunikacja natychmiastowa, śledzenie statusu online/offline, potwierdzenia odczytu i powiadomienia push.
 
