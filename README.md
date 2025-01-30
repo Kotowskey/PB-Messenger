@@ -300,7 +300,7 @@ Politechnika Chat to aplikacja do komunikacji w czasie rzeczywistym zbudowana na
 
 ## Struktura Firebase
 
-### Schema Bazy Danych
+### Schemat Bazy Danych
 ```
 |-- Users
 |   |-- userId
